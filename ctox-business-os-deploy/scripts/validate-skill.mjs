@@ -35,6 +35,12 @@ const forbiddenToolIdeas = [
   "write_sql"
 ];
 
+const forbiddenRuntimeInstallCoupling = [
+  "~/.codex",
+  "install-skill-from-github.py",
+  "python3 ~/.codex"
+];
+
 const errors = [];
 
 if (!fs.existsSync(skillPath)) {
@@ -59,6 +65,19 @@ if (!fs.existsSync(skillPath)) {
 for (const rel of requiredReferences) {
   if (!fs.existsSync(path.join(skillDir, rel))) {
     errors.push(`missing reference: ${rel}`);
+  }
+}
+
+for (const rel of ["SKILL.md", "references/agent-client-setup.md"]) {
+  const filePath = path.join(skillDir, rel);
+  if (!fs.existsSync(filePath)) {
+    continue;
+  }
+  const content = fs.readFileSync(filePath, "utf8");
+  for (const forbidden of forbiddenRuntimeInstallCoupling) {
+    if (content.includes(forbidden)) {
+      errors.push(`${rel} must not hard-code ${forbidden}`);
+    }
   }
 }
 

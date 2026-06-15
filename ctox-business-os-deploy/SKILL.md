@@ -185,24 +185,34 @@ node ctox-business-os-deploy/scripts/smoke-business-os-deploy.mjs \
 
 ## External Agent Setup
 
-Install the companion MCP usage skill from CTOX or the configured skill source,
-then add the MCP endpoint for the target instance.
+Install the companion MCP usage skill from CTOX using the target agent
+runtime's native skill-installation mechanism:
 
-For Codex:
+```text
+https://github.com/metric-space-ai/ctox/tree/main/skills/ctox-business-os-mcp
+```
 
-```bash
-python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
-  --repo metric-space-ai/ctox \
-  --path skills/ctox-business-os-mcp
+If the runtime has no skill installer, clone or download the CTOX repository
+and install only `skills/ctox-business-os-mcp` as a skill named
+`ctox-business-os-mcp`.
 
-codex mcp add <server-name> \
-  --url https://mcp.ctox.dev/mcp/<instance-id> \
-  --bearer-token-env-var CTOX_BUSINESS_OS_MCP_TOKEN
+Then add the selected MCP endpoint to the agent client. Managed mode uses:
+
+```text
+url: https://mcp.ctox.dev/mcp/<instance-id>
+authorization: Bearer <client-token>
+```
+
+Local developer mode uses:
+
+```text
+url: http://127.0.0.1:8788/mcp
 ```
 
 Restart the agent runtime after installing skills or changing MCP config.
 
-Read `references/agent-client-setup.md` before configuring non-Codex clients.
+Read `references/agent-client-setup.md` before configuring client-specific
+MCP entries.
 
 ## Failure Handling
 
