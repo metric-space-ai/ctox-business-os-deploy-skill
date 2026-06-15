@@ -1,0 +1,10 @@
+{
+  "name": "ctox-business-os-deploy",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "npm test && node scripts/validate-skill.mjs",
+    "test": "node --test test/*.test.mjs"
+  }
+}

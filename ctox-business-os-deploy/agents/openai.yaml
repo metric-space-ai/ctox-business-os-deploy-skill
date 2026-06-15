@@ -1,0 +1,4 @@
+interface:
+  display_name: "CTOX Business OS Deploy"
+  short_description: "Deploy CTOX Business OS MCP access"
+  default_prompt: "Use $ctox-business-os-deploy to install CTOX Business OS, connect MCP, and verify remote agent access."
