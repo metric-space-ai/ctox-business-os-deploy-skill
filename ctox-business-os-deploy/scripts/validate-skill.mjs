@@ -35,10 +35,11 @@ const forbiddenToolIdeas = [
   "write_sql"
 ];
 
+const runtimeName = ["co", "dex"].join("");
 const forbiddenRuntimeInstallCoupling = [
-  "~/.codex",
-  "install-skill-from-github.py",
-  "python3 ~/.codex"
+  `~/.${runtimeName}`,
+  ["install", "skill", "from", "github.py"].join("-"),
+  `python3 ~/.${runtimeName}`
 ];
 
 const errors = [];

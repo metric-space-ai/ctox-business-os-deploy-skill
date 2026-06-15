@@ -61,7 +61,8 @@ recommend a mode:
   administers it
 - network shape: public domain, NAT/private host, SSH-only, allowed outbound
   WebSocket, need for inbound ports
-- agent clients: Codex, ChatGPT, another MCP-capable client, local-only agent
+- agent clients: ChatGPT, hosted coding agents, MCP-capable clients,
+  local-only agents
 - application scope: Business OS only, CTOX daemon work, customer-facing app,
   internal automation, approvals/outbound messaging
 - security requirements: tenant/workspace, allowed actors, module/collection

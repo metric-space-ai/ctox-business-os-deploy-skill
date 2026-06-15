@@ -4,7 +4,7 @@ GitHub-hosted agent skill for installing, connecting, and verifying CTOX
 Business OS remote-control deployments.
 
 This repository is intentionally usable by any coding-agent runtime that can
-install skills from GitHub. It is not Codex-specific.
+install skills from GitHub. It is not tied to a single agent runtime.
 
 The installable skill folder is:
 

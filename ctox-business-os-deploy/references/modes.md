@@ -45,8 +45,8 @@ If the user declines ctox.dev:
 
 ## Managed Gateway
 
-Use this by default for hosted agents, ChatGPT, Codex Desktop, or private CTOX
-instances without inbound ports.
+Use this by default for hosted agents, ChatGPT, browser-hosted coding agents,
+or private CTOX instances without inbound ports.
 
 Shape:
 
