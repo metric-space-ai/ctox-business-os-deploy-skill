@@ -51,6 +51,12 @@ if (!fs.existsSync(skillPath)) {
   if (!skill.startsWith("---\n")) {
     errors.push("SKILL.md must start with YAML frontmatter");
   }
+  if (path.basename(skillDir) !== "ctox") {
+    errors.push("installable skill folder must be named ctox");
+  }
+  if (!/^name:\s*ctox\s*$/m.test(skill)) {
+    errors.push("SKILL.md frontmatter name must be ctox");
+  }
   for (const phrase of requiredPhrases) {
     if (!skill.includes(phrase)) {
       errors.push(`SKILL.md missing required phrase: ${phrase}`);
@@ -89,4 +95,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log("ok ctox-business-os-deploy skill structure");
+console.log("ok ctox skill structure");

@@ -1,4 +1,4 @@
-# CTOX Business OS Deploy Skill
+# CTOX Agent Skill
 
 GitHub-hosted agent skill for installing, connecting, and verifying CTOX
 Business OS remote-control deployments.
@@ -9,27 +9,30 @@ install skills from GitHub. It is not tied to a single agent runtime.
 The installable skill folder is:
 
 ```text
-ctox-business-os-deploy/
+ctox/
 ```
 
 GitHub skill URL:
 
 ```text
-https://github.com/metric-space-ai/ctox-business-os-deploy-skill/tree/main/ctox-business-os-deploy
+https://github.com/metric-space-ai/ctox-business-os-deploy-skill/tree/main/ctox
 ```
+
+The skill name in `SKILL.md` is `ctox`, so agent runtimes that expose skills as
+slash commands should install it as `/ctox`.
 
 ## Install With A Coding Agent
 
 Copy this prompt into the coding agent that should install the skill:
 
 ```text
-Install the CTOX Business OS deploy skill from GitHub:
+Install the CTOX agent skill from GitHub:
 
-https://github.com/metric-space-ai/ctox-business-os-deploy-skill/tree/main/ctox-business-os-deploy
+https://github.com/metric-space-ai/ctox-business-os-deploy-skill/tree/main/ctox
 
 Use your runtime's native skill-installation mechanism. If your runtime does
 not have one, clone or download the repository and install only the
-`ctox-business-os-deploy/` folder as a skill named `ctox-business-os-deploy`.
+`ctox/` folder as a skill named `ctox`.
 
 After installation, verify that the skill's `SKILL.md` is available to you and
 that the references under `references/` are included. Restart or reload your
@@ -208,7 +211,7 @@ A deployment is ready only when:
 The skill includes a local smoke helper:
 
 ```bash
-node ctox-business-os-deploy/scripts/smoke-business-os-deploy.mjs \
+node ctox/scripts/smoke-business-os-deploy.mjs \
   --instance-id <instance-id> \
   --gateway-base https://mcp.ctox.dev
 ```

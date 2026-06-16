@@ -1,5 +1,5 @@
 ---
-name: ctox-business-os-deploy
+name: ctox
 description: Use when installing CTOX Business OS for remote agent control, wiring the Business OS MCP Channel, connecting a CTOX instance to mcp.ctox.dev, configuring external coding agents with the companion MCP skill, or verifying that CTOX Business OS is reachable through its supported typed MCP surface.
 ---
 
@@ -179,7 +179,7 @@ A deployment is ready only when:
 Use the bundled smoke script when possible:
 
 ```bash
-node ctox-business-os-deploy/scripts/smoke-business-os-deploy.mjs \
+node ctox/scripts/smoke-business-os-deploy.mjs \
   --instance-id <instance-id> \
   --gateway-base https://mcp.ctox.dev
 ```
