@@ -17,11 +17,20 @@ const requiredReferences = [
 ];
 
 const requiredPhrases = [
+  "Use this skill as the interface between any coding agent and a CTOX instance",
+  "every normal `/ctox ...` request targets a",
+  "SSH plus the CTOX CLI",
+  "Task delegation",
   "ctox-business-os-mcp",
   "ctox.dev",
   "ask the user to choose",
   "RxDB/WebRTC",
   "business_os.status",
+  "business_os.list_runs",
+  "active work",
+  "current coding-agent session",
+  "https://metric-space-ai.github.io/ctox/cli.html",
+  "ctox status --json",
   "runtime_unavailable",
   "channel_disabled",
   "permission_denied",
@@ -40,6 +49,10 @@ const forbiddenRuntimeInstallCoupling = [
   `~/.${runtimeName}`,
   ["install", "skill", "from", "github.py"].join("-"),
   `python3 ~/.${runtimeName}`
+];
+
+const forbiddenHardcodedIntentExamples = [
+  "was machst du gerade"
 ];
 
 const errors = [];
@@ -65,6 +78,11 @@ if (!fs.existsSync(skillPath)) {
   for (const forbidden of forbiddenToolIdeas) {
     if (!skill.includes(forbidden)) {
       errors.push(`SKILL.md must explicitly forbid ${forbidden}`);
+    }
+  }
+  for (const forbidden of forbiddenHardcodedIntentExamples) {
+    if (skill.toLowerCase().includes(forbidden)) {
+      errors.push(`SKILL.md must not hard-code the status intent phrase: ${forbidden}`);
     }
   }
 }

@@ -1,7 +1,7 @@
-# CTOX Agent Skill
+# CTOX Agent Interface Skill
 
-GitHub-hosted agent skill for installing, connecting, and verifying CTOX
-Business OS remote-control deployments.
+GitHub-hosted agent skill that turns `/ctox ...` into the interface between
+any coding agent and a CTOX instance.
 
 This repository is intentionally usable by any coding-agent runtime that can
 install skills from GitHub. It is not tied to a single agent runtime.
@@ -47,7 +47,17 @@ mechanism and report what it actually did.
 
 ## What This Skill Does
 
-The skill guides an agent through CTOX Business OS deployment and readiness:
+The skill guides an agent through CTOX instance interaction. Every normal
+`/ctox ...` invocation should target CTOX through one of the supported access
+paths:
+
+- Business OS MCP for typed status, records, runs, artifacts, approvals, and
+  task delegation.
+- SSH plus the CTOX CLI for explicitly reachable host-level setup,
+  installation, service diagnostics, and complex operations that do not fit the
+  advertised MCP tools.
+
+It covers:
 
 1. Understand the target machine, network, agent client, and application.
 2. Recommend a deployment mode and ask the user to choose.
@@ -57,10 +67,15 @@ The skill guides an agent through CTOX Business OS deployment and readiness:
 6. Connect local, managed, or self-hosted MCP.
 7. Configure the external agent's MCP client and companion MCP usage skill.
 8. Verify end-to-end access through typed Business OS MCP tools.
+9. Answer CTOX instance status questions from MCP/CLI state, including active
+   tasks, runs, blockers, approvals, connected instances, and idle state.
+10. Submit or propose work to CTOX when the user gives a task to the instance.
 
-The skill is not for everyday record queries or Business OS actions. After a
-deployment is connected, use the companion `ctox-business-os-mcp` skill for
-normal Business OS interaction.
+The skill must not answer CTOX status questions from the current coding-agent
+session or repository checkout unless the user explicitly asks about the
+repository or this chat. After a deployment is connected, use the companion
+`ctox-business-os-mcp` skill for normal Business OS record interaction and
+actions.
 
 Companion skill URL:
 
@@ -147,7 +162,11 @@ a Business OS data mirror.
 
 ## Install And Deploy Routines
 
-The skill references these CTOX routines.
+The skill references these CTOX routines. The canonical CLI documentation is:
+
+```text
+https://metric-space-ai.github.io/ctox/cli.html
+```
 
 Install CTOX:
 

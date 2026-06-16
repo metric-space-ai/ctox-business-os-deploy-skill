@@ -1,17 +1,22 @@
 ---
 name: ctox
-description: Use when installing CTOX Business OS for remote agent control, wiring the Business OS MCP Channel, connecting a CTOX instance to mcp.ctox.dev, configuring external coding agents with the companion MCP skill, or verifying that CTOX Business OS is reachable through its supported typed MCP surface.
+description: Use whenever a coding agent is invoked with /ctox to interact with a CTOX instance: install or locate CTOX, query status and active work, delegate tasks, inspect runs/artifacts/approvals, wire Business OS MCP, connect to mcp.ctox.dev, use SSH plus CTOX CLI for host-level diagnostics, or verify that CTOX Business OS is reachable through its supported typed MCP surface.
 ---
 
-# CTOX Business OS Deploy
+# CTOX Agent Interface
 
-Use this skill to install CTOX, bring up Business OS, connect the Business OS
-MCP Channel, and verify that an external coding agent can control CTOX through
-typed Business OS MCP tools.
+Use this skill as the interface between any coding agent and a CTOX instance.
+When the user invokes `/ctox ...`, the agent should interact with CTOX in some
+form: through Business OS MCP for typed Business OS operations, or through an
+explicitly reachable host channel such as SSH plus the CTOX CLI for local
+installation, service diagnostics, and complex host-level operations.
 
-This skill is for deployment and readiness. After MCP is connected, use the
-companion `ctox-business-os-mcp` skill for day-to-day Business OS reads,
-actions, approvals, and reports.
+This is not a chat-session status skill. Do not answer `/ctox ...` from the
+current coding-agent session, local git status, or assumptions about this chat
+unless the user explicitly asks about the repository, this chat, or this agent.
+
+For deeper day-to-day Business OS reads, actions, approvals, and reports, use
+the companion `ctox-business-os-mcp` skill after MCP is connected.
 
 Before changing a target machine, understand the target and give the user a
 choice. Ask whether they want to couple the instance to ctox.dev unless they
@@ -36,6 +41,58 @@ remote_control_browser
 execute_raw_business_command
 HTTP fallback for Business OS records
 ```
+
+## Intent Routing
+
+Classify the user's request before acting.
+
+- **Instance interaction default:** every normal `/ctox ...` request targets a
+  CTOX instance. First determine the intended instance and available access
+  path. Use MCP when the request fits typed Business OS tools. Use SSH plus the
+  CTOX CLI only when the target host is explicitly reachable and the request is
+  host-level, installation-level, diagnostic, or too complex for the advertised
+  MCP tools.
+- **Operational status:** questions about what CTOX is doing, whether it is
+  idle, what jobs/runs/tasks are active, what is blocked, or which instances
+  are connected. Use CTOX MCP first and the CTOX CLI only when the target
+  machine is local or otherwise explicitly reachable.
+- **Task delegation:** if the user gives CTOX work to do, submit or propose
+  that work to the CTOX instance through typed MCP tools when available
+  (`business_os.propose_action`, `business_os.execute_action`, command/run
+  tools, or the advertised equivalent). If the work requires host-level setup,
+  codebase access, or service changes, use an explicit SSH/CLI path and report
+  the commands/evidence used.
+- **Deployment/readiness:** installing CTOX, starting Business OS, connecting
+  MCP, coupling to ctox.dev, configuring client agents, or verifying a new
+  endpoint. Follow the deployment workflow below.
+- **Business operation:** reading records, inspecting artifacts, approving
+  work, or proposing actions. Use the companion `ctox-business-os-mcp`
+  workflow and stay inside typed MCP tools.
+- **Repository/session status:** only inspect git status, local files, or the
+  current coding-agent session when the user explicitly asks about the
+  repository, checkout, this chat, or this agent.
+
+For operational status requests:
+
+1. Use the configured CTOX Business OS MCP server if available.
+2. Call `business_os.status` first.
+3. Then inspect active work with available read tools, preferring
+   `business_os.list_runs`, `business_os.list_mcp_activity`,
+   `business_os.list_approvals`, and narrow record queries for task/work queues
+   when those tools are advertised.
+4. If multiple CTOX MCP servers or instances are configured, check each one
+   when the runtime exposes them. Ask the user to choose only when the runtime
+   cannot disambiguate.
+5. Summarize each instance as `idle`, `working`, `blocked`, or
+   `not_connected`, including active run/command IDs, task titles, approvals,
+   blockers, timestamps, and deep links when the MCP response provides them.
+
+If no CTOX MCP server is available and no explicit SSH/CLI path to the CTOX
+host is available, say that the agent is not connected to a CTOX instance and
+explain the needed access path: `http://127.0.0.1:8788/mcp` for same-host local
+mode, `https://mcp.ctox.dev/mcp/<instance-id>` for managed mode, or an
+operator-provided SSH target plus CTOX CLI on the host. Do not fall back to
+repository checkout status.
 
 ## Deployment Modes
 
@@ -161,6 +218,29 @@ ctox business-os mcp serve --addr 127.0.0.1:8788
 Use `references/install.md`, `references/business-os-readiness.md`,
 `references/managed-gateway.md`, and `references/security-policy.md` for
 details.
+
+## CTOX CLI Reference
+
+When the target machine is local or reachable through an explicit operator
+shell/SSH context, use the CTOX CLI as a diagnostic companion to MCP.
+
+Canonical CLI documentation:
+
+```text
+https://metric-space-ai.github.io/ctox/cli.html
+```
+
+Prefer MCP for remote agent control and Business OS state. Use CLI commands
+for host-local service diagnostics, installation, startup, policy setup, and
+readiness checks, especially:
+
+```bash
+ctox status --json
+ctox business-os status
+ctox business-os peer status
+ctox business-os mcp status
+ctox business-os mcp tools
+```
 
 ## Verification
 
