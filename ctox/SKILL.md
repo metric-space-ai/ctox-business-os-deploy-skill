@@ -201,6 +201,28 @@ ctox business-os mcp policy set \
   --audit-retention-days 90
 ```
 
+### Capabilities ↔ rights
+
+Every MCP capability is gated by **two** layers and needs **both**: the channel
+policy above (`allow_reads` / `allow_writes` / `allow_approvals` /
+`allow_external_effects`) **and** a per-actor permission decided by the actor's
+**role**. Loosening the channel never grants a `user`-role actor any rights.
+
+Key rule to communicate to the operator:
+
+- **Ask questions / read data** (`query_records`, `get_record`, `list_runs`, …)
+  needs `DataRead` → **chef or admin**.
+- **Change data** (`propose_action` / `execute_action`) needs `DataWrite` →
+  **chef or admin**.
+- **Change apps** (`create_app` / `modify_app` / release / rollback) needs
+  `AppsInstall` / `AppsModify` / … → **chef or admin**.
+- A **`user`** role can only `CtoxTaskCreate`; it is **read-blocked** for data.
+
+So an instance **owner** who must ask, change data, and change apps has to
+resolve to **`chef`** (owner→chef) — seed the owner accordingly; do not rely on
+the channel policy alone. The full capability→permission→role matrix is in
+`references/capabilities-and-rights.md`.
+
 Managed gateway:
 
 ```bash
@@ -216,8 +238,9 @@ ctox business-os mcp serve --addr 127.0.0.1:8788
 ```
 
 Use `references/install.md`, `references/business-os-readiness.md`,
-`references/managed-gateway.md`, and `references/security-policy.md` for
-details.
+`references/managed-gateway.md`, `references/security-policy.md`, and
+`references/capabilities-and-rights.md` (which remote capability needs which
+role/permission) for details.
 
 ## CTOX CLI Reference
 
