@@ -22,12 +22,26 @@ ctox business-os mcp policy set --enabled true
 
 ## `permission_denied`
 
-Inspect actor/workspace/module/collection allowlists:
+First inspect the stable error field.
+
+If the field is an MCP policy key such as
+`CTOX_BUSINESS_OS_MCP_ALLOWED_ACTORS`, inspect actor/workspace/module/collection
+allowlists:
 
 ```bash
 ctox business-os mcp policy
 ctox business-os mcp policy keys
 ```
+
+If the field is `business_os_policy`, the channel is open but the actor lacks a
+Business OS role or grant. Check app visibility and product permissions:
+
+- private, preview, or restricted apps need `apps.view`
+- app details and record reads need `data.read`
+- module actions need app visibility plus `data.write`
+- app changes need `apps.modify`
+- status/audit access needs `mcp.manage`
+- approvals need `external.approve`
 
 Do not retry through shell or SQL.
 

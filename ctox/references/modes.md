@@ -32,6 +32,8 @@ Constraints:
 - CTOX must keep the outbound connector supervised for durable access
 - gateway can observe operational metadata such as request sizes and status
 - production use needs explicit actor/workspace/module/collection policy
+- production use also needs explicit Business OS roles/grants for app
+  visibility, data access, writes, app changes, and approvals
 - external effects must stay approval-gated
 
 If the user declines ctox.dev:
@@ -82,5 +84,6 @@ It must preserve the same constraints:
 - no central Business OS record mirror
 - typed MCP tools only
 - bounded responses and audit
+- same Business OS roles/grants as managed and local MCP
 - approval-gated external effects
 - no HTTP Business OS data bridge

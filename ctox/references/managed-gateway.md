@@ -13,6 +13,10 @@ Agent endpoint:
 https://mcp.ctox.dev/mcp/<instance-id>
 ```
 
+The bearer token should map to the intended Business OS actor. In production,
+prefer one client token per remote-agent persona so audit events show a stable
+actor and least-privilege scope.
+
 CTOX outbound connector:
 
 ```bash
@@ -64,6 +68,9 @@ EXPECT_CONNECTED=true npm run smoke
   `INSTANCE_CONNECT_TOKENS` are secrets, not `wrangler.jsonc` vars.
 - Keep connect replay protection enabled.
 - Use per-instance connect tokens for production.
+- Use per-actor or per-persona client tokens for production remote agents.
+- Do not let agents spoof `_context`; gateway-injected actor/workspace/role is
+  authoritative.
 - Gateway health/status endpoints may expose operational counters, not MCP
   payloads or Business OS records.
 - The gateway is a rendezvous and relay, not a Business OS data store.

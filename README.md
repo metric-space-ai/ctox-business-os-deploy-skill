@@ -64,12 +64,15 @@ It covers:
 3. Install or locate CTOX.
 4. Verify CTOX daemon and Business OS readiness.
 5. Configure Business OS MCP policy.
-6. Connect local, managed, or self-hosted MCP.
-7. Configure the external agent's MCP client and companion MCP usage skill.
-8. Verify end-to-end access through typed Business OS MCP tools.
-9. Answer CTOX instance status questions from MCP/CLI state, including active
+6. Configure the remote-agent actor, role, app visibility, and data/action
+   grants according to Business OS policy.
+7. Connect local, managed, or self-hosted MCP.
+8. Configure the external agent's MCP client and companion MCP usage skill.
+9. Verify end-to-end access through typed Business OS MCP tools, including
+   allowed and denied role/grant cases.
+10. Answer CTOX instance status questions from MCP/CLI state, including active
    tasks, runs, blockers, approvals, connected instances, and idle state.
-10. Submit or propose work to CTOX when the user gives a task to the instance.
+11. Submit or propose work to CTOX when the user gives a task to the instance.
 
 The skill must not answer CTOX status questions from the current coding-agent
 session or repository checkout unless the user explicitly asks about the
@@ -110,6 +113,16 @@ Agent               <-> Business OS MCP Channel       <-> CTOX instance
 Business OS records, commands, files, module manifests, and runtime status
 must not be moved through ad hoc HTTP fallbacks. The browser data plane remains
 RxDB/WebRTC-only.
+
+Remote-agent permissions follow the same Business OS model as humans:
+`Owner`/`chef`, `Admin`/`admin`, `App-Verantwortliche:r`/`founder`, and
+`Teammitglied`/`user`. MCP allowlists open the channel; default role authority,
+app visibility, version/lifecycle, and exact product grants such as
+`apps.view`, `data.read`, `data.write`, `apps.modify`, `mcp.manage`, and
+`external.approve` still decide each action. Unknown remote actors default to
+`user`; they need exact grants for status, private apps, data reads/writes,
+app changes, and approvals. Apps with `0.x.y`, missing, or invalid versions
+stay private; apps at `1.0.0+` are team-visible by default unless restricted.
 
 ## Deployment Choices
 
@@ -222,8 +235,12 @@ A deployment is ready only when:
 - CTOX health checks pass.
 - Business OS native peer and RxDB/WebRTC status are healthy.
 - MCP policy permits the intended actor/workspace/module/collection scope.
+- Business OS roles/grants permit the intended app visibility, data reads,
+  writes, app changes, and approvals.
+- Denied app/data scopes fail with `permission_denied` instead of leaking data.
 - The selected MCP endpoint returns tool descriptors.
-- `business_os.status` works through the selected endpoint.
+- `business_os.status` works for the setup/status actor, or a narrow service
+  actor's expected `business_os_policy` denial is documented.
 - managed mode shows a connected CTOX session.
 - audit events record the MCP checks.
 

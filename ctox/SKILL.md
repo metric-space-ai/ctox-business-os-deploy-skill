@@ -30,6 +30,27 @@ Business OS data stays on CTOX DB over RxDB/WebRTC. MCP is a typed
 communication channel for agents. It is not shell access, raw SQL, browser
 remote control, or an HTTP proxy for Business OS collections.
 
+Business OS access is two-layered. MCP channel policy decides whether a remote
+actor may use the channel at all. Business OS roles, app lifecycle visibility,
+and exact scoped grants then decide whether that actor may see an app, read
+data, write data, modify apps, approve work, manage MCP, or perform external
+effects. Do not confuse `--allow-actor`, `--allow-module`, or
+`--allow-collection` with product permissions such as `apps.view`,
+`data.read`, `data.write`, `apps.modify`, `mcp.manage`, or
+`external.approve`.
+
+Default role authority and scoped grants are different. `chef`/`admin` have
+broad authority; `founder` is scoped to assigned modules; `user` can create
+CTOX tasks by default (`CtoxTaskCreate`) but needs exact grants for status,
+app visibility, data reads/writes, app changes, and approvals. Use exact grants
+for service actors instead of reusing human Owner/Admin credentials.
+
+Runtime app visibility is version-aware: `0.x.y`, missing, or invalid SemVer
+apps are private unless the actor is responsible for the app or has explicit
+`apps.view`; `1.0.0+` apps are team-visible by default unless restricted. App
+visibility never implies data access, and data access never makes a hidden app
+visible.
+
 Do not introduce or rely on:
 
 ```text
@@ -124,6 +145,8 @@ recommend a mode:
   internal automation, approvals/outbound messaging
 - security requirements: tenant/workspace, allowed actors, module/collection
   scope, audit retention, token handling
+- intended remote-agent persona: business actor id, role/grants, app lifecycle
+  scope, data scope, write scope, and approval/external-effect scope
 
 Then make a concrete recommendation and ask the user to choose:
 
@@ -161,11 +184,15 @@ own domain, identity, and operations team, recommend self-hosted mode.
 3. Verify Business OS and the native RxDB peer.
 4. Discover the target machine/application and ask the user to choose a
    coupling mode.
-5. Configure Business OS MCP policy.
-6. Connect the selected local, managed, or self-hosted MCP endpoint.
-7. Install/configure the external agent skill and MCP server entry.
-8. Run end-to-end readiness checks.
-9. Report the endpoint, instance id, policy scope, verification evidence, and
+5. Define the remote-agent identity and least-privilege Business OS role/grants.
+6. Configure Business OS MCP channel policy for actor, workspace, module,
+   collection, denied tools, rate limit, audit retention, and external effects.
+7. Connect the selected local, managed, or self-hosted MCP endpoint.
+8. Install/configure the external agent skill and MCP server entry.
+9. Run end-to-end readiness checks, including allowed and denied role/grant
+   cases through the intended endpoint.
+10. Report the endpoint, instance id, actor id, effective role/grant scope,
+   policy scope, verification evidence, audit event IDs, and
    remaining blockers.
 
 ## Commands
@@ -201,27 +228,49 @@ ctox business-os mcp policy set \
   --audit-retention-days 90
 ```
 
-### Capabilities ↔ rights
+### Capabilities And Rights
 
-Every MCP capability is gated by **two** layers and needs **both**: the channel
-policy above (`allow_reads` / `allow_writes` / `allow_approvals` /
-`allow_external_effects`) **and** a per-actor permission decided by the actor's
-**role**. Loosening the channel never grants a `user`-role actor any rights.
+Every MCP capability needs both a channel-policy pass and a Business OS policy
+pass. Channel flags such as `allow_reads` and `allow_writes` open a class of
+tools; they do not grant `data.read`, `data.write`, `apps.view`,
+`apps.modify`, `mcp.manage`, or `external.approve`.
 
-Key rule to communicate to the operator:
+Key rules to communicate to the operator:
 
-- **Ask questions / read data** (`query_records`, `get_record`, `list_runs`, …)
-  needs `DataRead` → **chef or admin**.
-- **Change data** (`propose_action` / `execute_action`) needs `DataWrite` →
-  **chef or admin**.
-- **Change apps** (`create_app` / `modify_app` / release / rollback) needs
-  `AppsInstall` / `AppsModify` / … → **chef or admin**.
-- A **`user`** role can only `CtoxTaskCreate`; it is **read-blocked** for data.
+- **Status and audit** (`business_os.status`, `list_mcp_activity`) need
+  `mcp.manage` or `chef`/`admin`.
+- **App visibility** is checked before data access. Private `0.x.y`, missing,
+  invalid, preview, or restricted apps need app responsibility or `apps.view`;
+  `1.0.0+` team apps are visible unless restricted.
+- **Read data** (`query_records`, `get_record`, `list_runs`, artifacts, module
+  details, actions) needs exact `data.read` on the record, collection, module,
+  or workspace scope used by that tool.
+- **Change data** (`execute_action`) needs app visibility plus `data.write` on
+  the module. Risky actions may also need confirmation.
+- **Change apps** (`create_app`, `modify_app`, release/rollback paths) needs
+  app permissions such as `apps.install`, `apps.modify`, `apps.release`, or
+  `apps.rollback`.
+- **Approvals/external effects** need `external.approve`; `approve` also needs
+  external effects enabled in channel policy.
 
-So an instance **owner** who must ask, change data, and change apps has to
-resolve to **`chef`** (owner→chef) — seed the owner accordingly; do not rely on
-the channel policy alone. The full capability→permission→role matrix is in
-`references/capabilities-and-rights.md`.
+The full capability-to-rights matrix is in
+`references/capabilities-and-rights.md`. Persona and app-lifecycle guidance is
+in `references/roles-and-permissions.md`.
+
+Constrain production remote actors explicitly:
+
+```bash
+ctox business-os mcp policy set \
+  --allow-actor <agent-actor-id> \
+  --allow-workspace <workspace-id> \
+  --allow-module <module-id> \
+  --allow-collection <collection-name>
+```
+
+This channel policy does not grant Business OS product permissions. The actor
+still needs the corresponding role, module assignment, or explicit Business OS
+grant before tools can return app details, data, writes, app modifications, or
+approvals.
 
 Managed gateway:
 
@@ -238,9 +287,9 @@ ctox business-os mcp serve --addr 127.0.0.1:8788
 ```
 
 Use `references/install.md`, `references/business-os-readiness.md`,
-`references/managed-gateway.md`, `references/security-policy.md`, and
-`references/capabilities-and-rights.md` (which remote capability needs which
-role/permission) for details.
+`references/managed-gateway.md`, `references/security-policy.md`,
+`references/capabilities-and-rights.md`, and
+`references/roles-and-permissions.md` for details.
 
 ## CTOX CLI Reference
 
@@ -276,7 +325,16 @@ A deployment is ready only when:
 - Managed gateway status is reachable.
 - The target instance is connected when managed mode is expected.
 - `tools/list` returns Business OS MCP tools through the intended endpoint.
-- `business_os.status` works through the same endpoint.
+- The intended actor can call only the tools and scopes their Business OS role
+  and grants permit.
+- Private or preview apps require `apps.view`; `data.read` alone must not make
+  them visible.
+- App details, entities, actions, and record reads require data grants such as
+  `data.read`; app visibility alone must not expose data.
+- App writes require app visibility plus `data.write`; app changes require
+  `apps.modify`; approvals require `external.approve`.
+- `business_os.status` works through the same endpoint only for an actor with
+  `mcp.manage` or an equivalent `chef`/`admin` role.
 - MCP audit records show the checked calls.
 
 Use the bundled smoke script when possible:
@@ -326,6 +384,7 @@ Treat these as authoritative blockers:
 runtime_unavailable
 channel_disabled
 permission_denied
+business_os_policy
 rate_limited
 response_too_large
 request_too_large

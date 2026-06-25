@@ -5,6 +5,11 @@ External agents need two things:
 1. The companion `ctox-business-os-mcp` skill.
 2. An MCP server entry for the target CTOX instance.
 
+They also need an intended Business OS actor identity. The MCP client token or
+gateway context should resolve to the actor id, workspace, and role/grant scope
+the operator selected. Do not reuse a human Owner/Admin token for routine
+automation when a narrower service actor can do the job.
+
 ## Generic Skill Installation
 
 Ask the agent to install the companion skill from this GitHub URL using its
@@ -28,6 +33,9 @@ Configure a streamable HTTP MCP server for managed mode:
 url: https://mcp.ctox.dev/mcp/<instance-id>
 authorization: Bearer <client-token>
 ```
+
+Managed gateway context is authoritative. The agent should not add or spoof
+`_context` fields to become another actor, workspace, or role.
 
 Local developer mode uses the local server endpoint instead:
 
