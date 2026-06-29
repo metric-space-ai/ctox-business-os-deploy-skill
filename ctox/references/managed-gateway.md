@@ -50,13 +50,17 @@ before manual copy:
 node ctox/scripts/connect-business-os-mcp.mjs \
   --host <ctox.dev-subdomain-or-business-os-host> \
   --email <email> \
-  --password-stdin
+  --password-stdin \
+  --profile app-dev \
+  --configure-claude
 ```
 
 The script reads the password from stdin, logs in, selects the tenant from
 `/api/desktop/session-package`, calls `/api/instances/<tenant-id>/managed-mcp`,
 rotates an Agent Token when permitted, and prints the MCP client configuration.
-It never uses the web password as an MCP bearer token.
+The default `app-dev` profile enables Business OS MCP reads/writes needed for
+`business_os.create_app` and `business_os.modify_app`; external effects remain
+disabled. It never uses the web password as an MCP bearer token.
 
 If client auth is configured:
 

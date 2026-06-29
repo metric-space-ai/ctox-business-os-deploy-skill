@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
 class CookieJar {
@@ -36,13 +37,16 @@ if (args["self-test"]) {
   const selfTestJar = new CookieJar();
   print({
     ok: true,
+    profile: tokenProfile(),
+    scopes: tokenScopes(),
+    claudeScope: claudeScope(),
     cookieHeader: selfTestJar.headerFor("https://ctox.dev"),
     next: browserNextStep("https://ctox.dev", "", "https://ninja.ctox.dev"),
   });
   process.exit(0);
 }
 
-if (!host) fail("usage: connect-business-os-mcp.mjs --host <host-or-url> [--email <email>] [--tenant-id <id>] [--password-stdin]");
+if (!host) fail("usage: connect-business-os-mcp.mjs --host <host-or-url> [--email <email>] [--tenant-id <id>] [--password-stdin] [--profile app-dev|read-only] [--configure-claude]");
 
 const password = readPassword();
 const targetBaseUrl = normalizeBaseUrl(host);
@@ -83,9 +87,11 @@ try {
 
   const managed = await tryManagedCtoxDevToken(accountBaseUrl, targetBaseUrl, cookies);
   if (managed) {
+    const claudeSetup = configureClaudeIfRequested(managed);
     print({
       ok: true,
       mode: "managed_ctox_dev",
+      profile: managed.profile,
       authenticated,
       targetBaseUrl,
       accountBaseUrl,
@@ -97,6 +103,7 @@ try {
       authorizationHeader: `Bearer ${managed.token.token}`,
       tokenId: managed.token.tokenId,
       expiresAt: managed.token.expiresAt,
+      scopes: managed.scopes,
       dashboardUrl: managed.dashboardUrl,
       codex: {
         name: managed.serverName,
@@ -110,6 +117,20 @@ try {
         headers: {
           Authorization: `Bearer ${managed.token.token}`,
         },
+        addCommand: [
+          "claude",
+          "mcp",
+          "add",
+          "--transport",
+          "http",
+          "--scope",
+          claudeScope(),
+          managed.serverName,
+          managed.mcpUrl,
+          "--header",
+          "Authorization: Bearer <token>",
+        ],
+        configured: claudeSetup,
       },
       evidence,
     });
@@ -195,14 +216,9 @@ async function tryManagedCtoxDevToken(accountBaseUrl, targetBaseUrl, jar) {
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
       action: "rotate_token",
-      label: args.label || "Agent Login Bootstrap",
+      label: args.label || `Agent Login Bootstrap (${tokenProfile()})`,
       expiresInDays: Number(args["expires-in-days"] || 90),
-      scopes: {
-        allowReads: args["allow-reads"] !== "false",
-        allowWrites: args["allow-writes"] === true || args["allow-writes"] === "true",
-        allowApprovals: args["allow-approvals"] === true || args["allow-approvals"] === "true",
-        allowExternalEffects: false,
-      },
+      scopes: tokenScopes(),
     }),
   }, jar);
   const tokenPayload = await tokenResponse.json().catch(() => ({}));
@@ -217,7 +233,111 @@ async function tryManagedCtoxDevToken(accountBaseUrl, targetBaseUrl, jar) {
     token: tokenPayload.token,
     serverName: `${serverNamePart(tenant.domain || tenant.slug || tenant.id)}-business-os`,
     dashboardUrl: `${accountBaseUrl}/dashboard?tenant=${encodeURIComponent(tenant.id)}#mcp`,
+    profile: tokenProfile(),
+    scopes: tokenScopes(),
   };
+}
+
+function tokenProfile() {
+  return String(args.profile || args["token-profile"] || "app-dev").trim().toLowerCase();
+}
+
+function tokenScopes() {
+  const profile = tokenProfile();
+  if (!["app-dev", "read-only"].includes(profile)) {
+    fail("unsupported_token_profile", {
+      profile,
+      supportedProfiles: ["app-dev", "read-only"],
+    });
+  }
+  const appDev = profile === "app-dev";
+  return {
+    allowReads: boolArg("allow-reads", true),
+    allowWrites: boolArg("allow-writes", appDev),
+    allowApprovals: boolArg("allow-approvals", appDev),
+    allowExternalEffects: false,
+  };
+}
+
+function boolArg(name, defaultValue) {
+  if (!(name in args)) return defaultValue;
+  const value = args[name];
+  if (value === true) return true;
+  return String(value).toLowerCase() === "true";
+}
+
+function claudeScope() {
+  const scope = String(args["claude-scope"] || "user").trim().toLowerCase();
+  return ["local", "user", "project"].includes(scope) ? scope : "user";
+}
+
+function configureClaudeIfRequested(managed) {
+  if (args["configure-claude"] !== true && args["configure-claude"] !== "true") {
+    return {
+      attempted: false,
+      instruction: "Run the addCommand with the returned token, or rerun this script with --configure-claude.",
+    };
+  }
+  const scope = claudeScope();
+  const replace = args["no-replace-claude"] !== true && args["no-replace-claude"] !== "true";
+  const steps = [];
+  if (replace) {
+    const remove = spawnSync("claude", ["mcp", "remove", "--scope", scope, managed.serverName], {
+      encoding: "utf8",
+    });
+    steps.push(commandStep("claude_mcp_remove", remove));
+  }
+  const add = spawnSync("claude", [
+    "mcp",
+    "add",
+    "--transport",
+    "http",
+    "--scope",
+    scope,
+    managed.serverName,
+    managed.mcpUrl,
+    "--header",
+    `Authorization: Bearer ${managed.token.token}`,
+  ], {
+    encoding: "utf8",
+  });
+  steps.push(commandStep("claude_mcp_add", add));
+  if (add.status !== 0) {
+    return {
+      attempted: true,
+      ok: false,
+      scope,
+      name: managed.serverName,
+      steps,
+    };
+  }
+  const get = spawnSync("claude", ["mcp", "get", managed.serverName], {
+    encoding: "utf8",
+  });
+  steps.push(commandStep("claude_mcp_get", get));
+  return {
+    attempted: true,
+    ok: add.status === 0 && get.status === 0 && /Status:\s*✓|Connected/i.test(`${get.stdout}\n${get.stderr}`),
+    scope,
+    name: managed.serverName,
+    steps,
+  };
+}
+
+function commandStep(step, result) {
+  return {
+    step,
+    status: result.status,
+    ok: result.status === 0,
+    stdout: redactSecrets(result.stdout || ""),
+    stderr: redactSecrets(result.stderr || ""),
+  };
+}
+
+function redactSecrets(value) {
+  return String(value)
+    .replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/g, "Bearer <redacted>")
+    .replace(/"Authorization"\s*:\s*"[^"]+"/g, "\"Authorization\": \"<redacted>\"");
 }
 
 async function fetchSessionPackage(baseUrl, jar) {

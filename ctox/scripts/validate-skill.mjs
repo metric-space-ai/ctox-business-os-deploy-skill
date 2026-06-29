@@ -25,6 +25,7 @@ const requiredPhrases = [
   "SSH plus the CTOX CLI",
   "Task delegation",
   "ctox-business-os-mcp",
+  "business-os-app-module-development",
   "ctox.dev",
   "ask the user to choose",
   "RxDB/WebRTC",
@@ -61,6 +62,9 @@ const requiredCredentialBootstrapPhrases = [
   "Credential Bootstrap",
   "connect-business-os-mcp.mjs",
   "--password-stdin",
+  "--profile app-dev",
+  "--configure-claude",
+  "claude mcp add --transport http",
   "/api/desktop/session-package",
   "/api/instances/<tenant-id>/managed-mcp",
   "/api/business-os/mcp/connect-info",
@@ -140,7 +144,13 @@ for (const rel of requiredScriptFiles) {
     errors.push(`${rel} failed node --check: ${syntax.stderr || syntax.stdout}`);
   }
   const selfTest = spawnSync(process.execPath, [scriptPath, "--self-test"], { encoding: "utf8" });
-  if (selfTest.status !== 0 || !selfTest.stdout.includes("https://ctox.dev/dashboard?tenant=ninja.ctox.dev#mcp")) {
+  if (
+    selfTest.status !== 0
+    || !selfTest.stdout.includes("https://ctox.dev/dashboard?tenant=ninja.ctox.dev#mcp")
+    || !selfTest.stdout.includes("\"profile\": \"app-dev\"")
+    || !selfTest.stdout.includes("\"allowWrites\": true")
+    || !selfTest.stdout.includes("\"allowExternalEffects\": false")
+  ) {
     errors.push(`${rel} failed self-test: ${selfTest.stderr || selfTest.stdout}`);
   }
 }

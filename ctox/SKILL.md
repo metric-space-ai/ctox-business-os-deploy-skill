@@ -130,7 +130,14 @@ credentials as web-login credentials for a setup flow:
    `/api/instances/<tenant-id>/managed-mcp`.
 4. For direct Business OS targets, authenticate through `/login`, then read
    `/api/business-os/mcp/connect-info`.
-5. If the server does not expose the required endpoint or the actor lacks
+5. For Claude Code, pass `--configure-claude` so the script runs
+   `claude mcp add --transport http --scope user ... --header
+   "Authorization: Bearer <token>"` and health-checks the configured server.
+6. Use the default `--profile app-dev` when the user intends to create or
+   modify Business OS apps. It mints an Agent Token with reads, writes, and
+   approval-class MCP calls enabled, while external effects stay disabled.
+   Use `--profile read-only` only for inspection-only agents.
+7. If the server does not expose the required endpoint or the actor lacks
    Owner/Admin rights, open the browser to the exact dashboard MCP location and
    tell the user to enable Managed MCP, press **Token rotieren**, and copy the
    one-time token shown under **Neuer Token**. Do not ask them to search for an
@@ -142,13 +149,15 @@ Example, reading the password from stdin:
 printf '%s\n' '<password>' | node ctox/scripts/connect-business-os-mcp.mjs \
   --host ninja.ctox.dev \
   --email <email> \
-  --password-stdin
+  --password-stdin \
+  --profile app-dev \
+  --configure-claude
 ```
 
 The script prints structured JSON with the MCP URL, authorization header,
-Codex/Claude server shape, dashboard URL, and non-secret evidence. If it
-returns `mcp_bootstrap_unavailable`, use the included `next.url` as the browser
-location for manual token rotation.
+Codex/Claude server shape, dashboard URL, token scope, Claude configuration
+result, and non-secret evidence. If it returns `mcp_bootstrap_unavailable`, use
+the included `next.url` as the browser location for manual token rotation.
 
 ## Deployment Modes
 
@@ -332,7 +341,9 @@ Credentialed bootstrap:
 node ctox/scripts/connect-business-os-mcp.mjs \
   --host <business-os-host-or-ctox.dev-subdomain> \
   --email <email> \
-  --password-stdin
+  --password-stdin \
+  --profile app-dev \
+  --configure-claude
 ```
 
 Never pass passwords as command arguments. Pipe them through stdin or use the
@@ -422,6 +433,14 @@ Restart the agent runtime after installing skills or changing MCP config.
 
 Read `references/agent-client-setup.md` before configuring client-specific
 MCP entries.
+
+For Business OS app development, the connected agent must also follow the
+companion `ctox-business-os-mcp` App Development workflow. In particular,
+`business_os.create_app` and `business_os.modify_app` return a
+`development_contract` with `required_skill:
+business-os-app-module-development`, `skill_resources`, validation, smoke, and
+E2E commands. Use that contract exactly; do not hand-roll raw file writes or a
+browser/API fallback.
 
 ## Failure Handling
 

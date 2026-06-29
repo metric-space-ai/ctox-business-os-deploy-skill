@@ -59,7 +59,9 @@ manually:
 node ctox/scripts/connect-business-os-mcp.mjs \
   --host <business-os-host-or-ctox.dev-subdomain> \
   --email <email> \
-  --password-stdin
+  --password-stdin \
+  --profile app-dev \
+  --configure-claude
 ```
 
 Read the password from stdin or `CTOX_WEB_LOGIN_PASSWORD`; never put it in the
@@ -67,14 +69,46 @@ command line. For `*.ctox.dev` hosts the script authenticates against
 `https://ctox.dev`, reads `/api/desktop/session-package`, selects the matching
 tenant, enables Managed MCP when permitted, rotates a one-time Agent Token via
 `/api/instances/<tenant-id>/managed-mcp`, and prints the MCP URL plus
-Codex/Claude configuration shape. For direct Business OS hosts it uses
-`/login` and `/api/business-os/mcp/connect-info`.
+Codex/Claude configuration shape. The default token profile is `app-dev`
+because this skill is often used to build and modify Business OS apps; it
+enables reads, writes, and approval-class MCP calls while leaving external
+effects disabled. Use `--profile read-only` for inspection-only agents. For
+direct Business OS hosts it uses `/login` and
+`/api/business-os/mcp/connect-info`.
+
+For Claude Code, `--configure-claude` runs:
+
+```bash
+claude mcp add --transport http --scope user <name> <url> \
+  --header "Authorization: Bearer <token>"
+```
+
+It replaces an existing server with the same name unless
+`--no-replace-claude` is passed, then runs `claude mcp get <name>` as a
+health check. If a runtime should keep MCP config project-local, pass
+`--claude-scope local` or `--claude-scope project`.
 
 If the script reports `mcp_bootstrap_unavailable`, open the returned
 `next.url`. In the dashboard choose the tenant, open **MCP**, enable Managed
 MCP, press **Token rotieren**, and copy the one-time token shown under
 **Neuer Token**. The same panel shows the MCP URL and Connector URL. Do not
 send the user to an unspecified "dashboard token" location.
+
+## Business OS App Development
+
+After Claude Code is connected, use the companion `ctox-business-os-mcp` skill
+for app work. `business_os.create_app` and `business_os.modify_app` return the
+canonical `development_contract`:
+
+- `required_skill`: normally `business-os-app-module-development`
+- `skill_resources`: module contract, do/don't list, green checklist, and
+  architecture translation references
+- `validation_command`, `smoke_command`, and `e2e_command`
+- `app_directory` under `runtime/business-os/installed-modules/<module_id>`
+
+Claude should use that contract exactly, validate with the returned command,
+and rely on Business OS MCP completion status. Do not use browser automation,
+raw HTTP, SQL, or shell access as a Business OS data path.
 
 ## Runtime-Specific Notes
 
