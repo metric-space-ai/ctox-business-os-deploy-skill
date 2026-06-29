@@ -30,6 +30,34 @@ Gateway status:
 ctox business-os mcp gateway-status --instance-id <instance-id>
 ```
 
+## Browser Token Location
+
+For ctox.dev managed instances the token is in the tenant dashboard:
+
+```text
+https://ctox.dev/dashboard?tenant=<tenant-id>#mcp
+```
+
+Open the tenant, switch to **MCP**, enable Managed MCP, then press
+**Token rotieren**. The raw client token is displayed once under
+**Neuer Token** together with the MCP URL and Connector URL. Copy it
+immediately into the agent runtime's secret store.
+
+If the user supplied web-login credentials, prefer the scripted bootstrap
+before manual copy:
+
+```bash
+node ctox/scripts/connect-business-os-mcp.mjs \
+  --host <ctox.dev-subdomain-or-business-os-host> \
+  --email <email> \
+  --password-stdin
+```
+
+The script reads the password from stdin, logs in, selects the tenant from
+`/api/desktop/session-package`, calls `/api/instances/<tenant-id>/managed-mcp`,
+rotates an Agent Token when permitted, and prints the MCP client configuration.
+It never uses the web password as an MCP bearer token.
+
 If client auth is configured:
 
 ```bash

@@ -115,6 +115,41 @@ mode, `https://mcp.ctox.dev/mcp/<instance-id>` for managed mode, or an
 operator-provided SSH target plus CTOX CLI on the host. Do not fall back to
 repository checkout status.
 
+## Credential Bootstrap
+
+If the user gives a Business OS or ctox.dev host plus email/password and asks
+to connect an agent, do not stop at "need a bearer token". Treat those
+credentials as web-login credentials for a setup flow:
+
+1. Do not repeat, log, store, or put the password in command arguments.
+2. Use `scripts/connect-business-os-mcp.mjs` with `--password-stdin` or
+   `CTOX_WEB_LOGIN_PASSWORD` to authenticate and bootstrap MCP.
+3. For `*.ctox.dev` targets, authenticate against `https://ctox.dev`, read
+   `/api/desktop/session-package`, select the matching tenant, enable Managed
+   MCP if needed, and rotate a one-time Agent Token through
+   `/api/instances/<tenant-id>/managed-mcp`.
+4. For direct Business OS targets, authenticate through `/login`, then read
+   `/api/business-os/mcp/connect-info`.
+5. If the server does not expose the required endpoint or the actor lacks
+   Owner/Admin rights, open the browser to the exact dashboard MCP location and
+   tell the user to enable Managed MCP, press **Token rotieren**, and copy the
+   one-time token shown under **Neuer Token**. Do not ask them to search for an
+   unspecified token.
+
+Example, reading the password from stdin:
+
+```bash
+printf '%s\n' '<password>' | node ctox/scripts/connect-business-os-mcp.mjs \
+  --host ninja.ctox.dev \
+  --email <email> \
+  --password-stdin
+```
+
+The script prints structured JSON with the MCP URL, authorization header,
+Codex/Claude server shape, dashboard URL, and non-secret evidence. If it
+returns `mcp_bootstrap_unavailable`, use the included `next.url` as the browser
+location for manual token rotation.
+
 ## Deployment Modes
 
 Choose one mode:
@@ -290,6 +325,18 @@ Use `references/install.md`, `references/business-os-readiness.md`,
 `references/managed-gateway.md`, `references/security-policy.md`,
 `references/capabilities-and-rights.md`, and
 `references/roles-and-permissions.md` for details.
+
+Credentialed bootstrap:
+
+```bash
+node ctox/scripts/connect-business-os-mcp.mjs \
+  --host <business-os-host-or-ctox.dev-subdomain> \
+  --email <email> \
+  --password-stdin
+```
+
+Never pass passwords as command arguments. Pipe them through stdin or use the
+runtime secret store to provide `CTOX_WEB_LOGIN_PASSWORD`.
 
 ## CTOX CLI Reference
 

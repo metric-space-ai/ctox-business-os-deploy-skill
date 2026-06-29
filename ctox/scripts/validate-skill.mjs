@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const skillDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -52,6 +53,21 @@ const requiredPhrases = [
   "response_too_large"
 ];
 
+const requiredScriptFiles = [
+  "scripts/connect-business-os-mcp.mjs"
+];
+
+const requiredCredentialBootstrapPhrases = [
+  "Credential Bootstrap",
+  "connect-business-os-mcp.mjs",
+  "--password-stdin",
+  "/api/desktop/session-package",
+  "/api/instances/<tenant-id>/managed-mcp",
+  "/api/business-os/mcp/connect-info",
+  "Token rotieren",
+  "Neuer Token"
+];
+
 const forbiddenToolIdeas = [
   "execute_raw_business_command",
   "push_rxdb_record",
@@ -90,6 +106,11 @@ if (!fs.existsSync(skillPath)) {
       errors.push(`SKILL.md missing required phrase: ${phrase}`);
     }
   }
+  for (const phrase of requiredCredentialBootstrapPhrases) {
+    if (!skill.includes(phrase)) {
+      errors.push(`SKILL.md missing credential bootstrap phrase: ${phrase}`);
+    }
+  }
   for (const forbidden of forbiddenToolIdeas) {
     if (!skill.includes(forbidden)) {
       errors.push(`SKILL.md must explicitly forbid ${forbidden}`);
@@ -108,12 +129,33 @@ for (const rel of requiredReferences) {
   }
 }
 
+for (const rel of requiredScriptFiles) {
+  const scriptPath = path.join(skillDir, rel);
+  if (!fs.existsSync(scriptPath)) {
+    errors.push(`missing script: ${rel}`);
+    continue;
+  }
+  const syntax = spawnSync(process.execPath, ["--check", scriptPath], { encoding: "utf8" });
+  if (syntax.status !== 0) {
+    errors.push(`${rel} failed node --check: ${syntax.stderr || syntax.stdout}`);
+  }
+  const selfTest = spawnSync(process.execPath, [scriptPath, "--self-test"], { encoding: "utf8" });
+  if (selfTest.status !== 0 || !selfTest.stdout.includes("https://ctox.dev/dashboard?tenant=ninja.ctox.dev#mcp")) {
+    errors.push(`${rel} failed self-test: ${selfTest.stderr || selfTest.stdout}`);
+  }
+}
+
 for (const rel of ["SKILL.md", "references/agent-client-setup.md"]) {
   const filePath = path.join(skillDir, rel);
   if (!fs.existsSync(filePath)) {
     continue;
   }
   const content = fs.readFileSync(filePath, "utf8");
+  for (const phrase of requiredCredentialBootstrapPhrases.filter((value) => value !== "Credential Bootstrap")) {
+    if (!content.includes(phrase)) {
+      errors.push(`${rel} missing credential bootstrap phrase: ${phrase}`);
+    }
+  }
   for (const forbidden of forbiddenRuntimeInstallCoupling) {
     if (content.includes(forbidden)) {
       errors.push(`${rel} must not hard-code ${forbidden}`);

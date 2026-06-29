@@ -46,6 +46,36 @@ url: http://127.0.0.1:8788/mcp
 Hosted clients normally require HTTPS. If the target is local-only, explain
 that hosted agents cannot reach it without a tunnel or gateway.
 
+## When The User Provides Email And Password
+
+Email/password is a valid way to start setup, but it is not itself the MCP
+bearer token. Use it to authenticate to the Business OS or ctox.dev control
+plane, then mint or fetch the supported MCP configuration.
+
+Run the bundled bootstrap script instead of telling the user to find a token
+manually:
+
+```bash
+node ctox/scripts/connect-business-os-mcp.mjs \
+  --host <business-os-host-or-ctox.dev-subdomain> \
+  --email <email> \
+  --password-stdin
+```
+
+Read the password from stdin or `CTOX_WEB_LOGIN_PASSWORD`; never put it in the
+command line. For `*.ctox.dev` hosts the script authenticates against
+`https://ctox.dev`, reads `/api/desktop/session-package`, selects the matching
+tenant, enables Managed MCP when permitted, rotates a one-time Agent Token via
+`/api/instances/<tenant-id>/managed-mcp`, and prints the MCP URL plus
+Codex/Claude configuration shape. For direct Business OS hosts it uses
+`/login` and `/api/business-os/mcp/connect-info`.
+
+If the script reports `mcp_bootstrap_unavailable`, open the returned
+`next.url`. In the dashboard choose the tenant, open **MCP**, enable Managed
+MCP, press **Token rotieren**, and copy the one-time token shown under
+**Neuer Token**. The same panel shows the MCP URL and Connector URL. Do not
+send the user to an unspecified "dashboard token" location.
+
 ## Runtime-Specific Notes
 
 Do not give the user a hard-coded local install script for one agent runtime
