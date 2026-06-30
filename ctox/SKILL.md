@@ -122,22 +122,29 @@ to connect an agent, do not stop at "need a bearer token". Treat those
 credentials as web-login credentials for a setup flow:
 
 1. Do not repeat, log, store, or put the password in command arguments.
-2. Use `scripts/connect-business-os-mcp.mjs` with `--password-stdin` or
+2. Ensure the helper runtime is available before invoking scripts. The bundled
+   helpers require Node.js 18+ on PATH. On Windows, if `node` is missing, run
+   `scripts/install-windows-prereqs.ps1` from the installed skill folder or
+   install Node.js LTS with `winget install -e --id OpenJS.NodeJS.LTS
+   --accept-package-agreements --accept-source-agreements`, refresh PATH, and
+   rerun `node scripts/validate-skill.mjs`. If Node cannot be installed, report
+   that as the blocker; do not call the skill "fully installed and functional".
+3. Use `scripts/connect-business-os-mcp.mjs` with `--password-stdin` or
    `CTOX_WEB_LOGIN_PASSWORD` to authenticate and bootstrap MCP.
-3. For `*.ctox.dev` targets, authenticate against `https://ctox.dev`, read
+4. For `*.ctox.dev` targets, authenticate against `https://ctox.dev`, read
    `/api/desktop/session-package`, select the matching tenant, enable Managed
    MCP if needed, and rotate a one-time Agent Token through
    `/api/instances/<tenant-id>/managed-mcp`.
-4. For direct Business OS targets, authenticate through `/login`, then read
+5. For direct Business OS targets, authenticate through `/login`, then read
    `/api/business-os/mcp/connect-info`.
-5. For Claude Code, pass `--configure-claude` so the script runs
+6. For Claude Code, pass `--configure-claude` so the script runs
    `claude mcp add --transport http --scope user ... --header
    "Authorization: Bearer <token>"` and health-checks the configured server.
-6. Use the default `--profile app-dev` when the user intends to create or
+7. Use the default `--profile app-dev` when the user intends to create or
    modify Business OS apps. It mints an Agent Token with reads, writes, and
    approval-class MCP calls enabled, while external effects stay disabled.
    Use `--profile read-only` only for inspection-only agents.
-7. If the server does not expose the required endpoint or the actor lacks
+8. If the server does not expose the required endpoint or the actor lacks
    Owner/Admin rights, open the browser to the exact dashboard MCP location and
    tell the user to enable Managed MCP, press **Token rotieren**, and copy the
    one-time token shown under **Neuer Token**. Do not ask them to search for an
@@ -332,6 +339,7 @@ ctox business-os mcp serve --addr 127.0.0.1:8788
 
 Use `references/install.md`, `references/business-os-readiness.md`,
 `references/managed-gateway.md`, `references/security-policy.md`,
+`references/windows-prereqs.md`,
 `references/capabilities-and-rights.md`, and
 `references/roles-and-permissions.md` for details.
 

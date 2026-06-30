@@ -26,7 +26,7 @@ slash commands should install it as `/ctox`.
 Copy this prompt into the coding agent that should install the skill:
 
 ```text
-Install the CTOX agent skill from GitHub:
+Install the CTOX agent skill from GitHub and make it runnable on this machine:
 
 https://github.com/metric-space-ai/ctox-business-os-deploy-skill/tree/main/ctox
 
@@ -35,15 +35,24 @@ not have one, clone or download the repository and install only the
 `ctox/` folder as a skill named `ctox`.
 
 After installation, verify that the skill's `SKILL.md` is available to you and
-that the references under `references/` are included. Restart or reload your
-agent runtime if required. Do not configure CTOX, tokens, ctox.dev coupling, or
-MCP endpoints yet; only report the installed skill location and any manual step
-the user must perform.
+that the references and scripts under `references/` and `scripts/` are included.
+Then verify runtime prerequisites. The bundled helper scripts require Node.js
+18+ on PATH. On Windows, if `node` is missing, install Node.js LTS with
+`winget install -e --id OpenJS.NodeJS.LTS --accept-package-agreements --accept-source-agreements`
+or run `ctox/scripts/install-windows-prereqs.ps1`, refresh PATH, and rerun
+`node ctox/scripts/validate-skill.mjs`. Restart or reload your agent runtime if
+required.
+
+This prompt only installs the skill and its local prerequisites. Do not configure
+CTOX, tokens, ctox.dev coupling, or MCP endpoints yet unless the user explicitly
+asked to connect a CTOX instance.
 ```
 
-The prompt intentionally avoids hard-coded local paths or one runtime's
-installer script. Each agent should use its own native skill installation
-mechanism and report what it actually did.
+The prompt intentionally avoids hard-coded local paths for one agent runtime.
+Each agent should use its own native skill installation mechanism and report
+what it actually did. A report that says "Node is not installed" is not a
+complete functional install; it is a blocker unless the user asked for a
+copy-only installation.
 
 ## What This Skill Does
 

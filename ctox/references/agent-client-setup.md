@@ -117,6 +117,18 @@ unless they explicitly ask for that runtime. A coding agent should use its own
 native skill installer, its own MCP client schema, and its own secret-handling
 model.
 
+For Windows Claude Code installs, verify Node.js 18+ before running the bundled
+helpers. If `node` is missing, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\ctox\scripts\install-windows-prereqs.ps1
+node .\ctox\scripts\validate-skill.mjs
+```
+
+If the script cannot install Node.js, provide the exact blocker and do not call
+the install fully functional. Copying `SKILL.md` and references is a copy-only
+install; it is not enough for credential bootstrap or Claude MCP setup.
+
 For GUI-based agents, make sure bearer tokens are visible to the launched
 process. For hosted agents, prefer the platform's secret manager over pasted
 tokens in configuration files.

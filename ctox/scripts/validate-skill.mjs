@@ -13,6 +13,7 @@ const requiredReferences = [
   "references/business-os-readiness.md",
   "references/managed-gateway.md",
   "references/agent-client-setup.md",
+  "references/windows-prereqs.md",
   "references/capabilities-and-rights.md",
   "references/roles-and-permissions.md",
   "references/security-policy.md",
@@ -46,6 +47,9 @@ const requiredPhrases = [
   "business_os.list_runs",
   "active work",
   "current coding-agent session",
+  "Node.js 18+",
+  "windows-prereqs.md",
+  "install-windows-prereqs.ps1",
   "https://metric-space-ai.github.io/ctox/cli.html",
   "ctox status --json",
   "runtime_unavailable",
@@ -56,6 +60,10 @@ const requiredPhrases = [
 
 const requiredScriptFiles = [
   "scripts/connect-business-os-mcp.mjs"
+];
+
+const requiredWindowsPrereqFiles = [
+  "scripts/install-windows-prereqs.ps1"
 ];
 
 const requiredCredentialBootstrapPhrases = [
@@ -155,6 +163,20 @@ for (const rel of requiredScriptFiles) {
   }
 }
 
+for (const rel of requiredWindowsPrereqFiles) {
+  const scriptPath = path.join(skillDir, rel);
+  if (!fs.existsSync(scriptPath)) {
+    errors.push(`missing Windows prerequisite script: ${rel}`);
+    continue;
+  }
+  const content = fs.readFileSync(scriptPath, "utf8");
+  for (const phrase of ["OpenJS.NodeJS.LTS", "Node.js 18+", "winget install"]) {
+    if (!content.includes(phrase)) {
+      errors.push(`${rel} missing Windows prerequisite phrase: ${phrase}`);
+    }
+  }
+}
+
 for (const rel of ["SKILL.md", "references/agent-client-setup.md"]) {
   const filePath = path.join(skillDir, rel);
   if (!fs.existsSync(filePath)) {
@@ -169,6 +191,19 @@ for (const rel of ["SKILL.md", "references/agent-client-setup.md"]) {
   for (const forbidden of forbiddenRuntimeInstallCoupling) {
     if (content.includes(forbidden)) {
       errors.push(`${rel} must not hard-code ${forbidden}`);
+    }
+  }
+}
+
+for (const rel of ["SKILL.md", "references/install.md", "references/windows-prereqs.md"]) {
+  const filePath = path.join(skillDir, rel);
+  if (!fs.existsSync(filePath)) {
+    continue;
+  }
+  const content = fs.readFileSync(filePath, "utf8");
+  for (const phrase of ["Node.js 18+", "install-windows-prereqs.ps1", "OpenJS.NodeJS.LTS"]) {
+    if (!content.includes(phrase)) {
+      errors.push(`${rel} missing Windows prerequisite phrase: ${phrase}`);
     }
   }
 }

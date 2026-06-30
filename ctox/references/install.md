@@ -16,6 +16,30 @@ ctox start
 ctox status
 ```
 
+## Windows Skill Prerequisites
+
+Installing the skill folder alone is not enough when the agent must run the
+bundled setup helpers. The helpers are Node ESM scripts and require Node.js 18+
+on PATH.
+
+On Windows, if `node` is missing, install Node.js LTS before reporting the
+skill as functional:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\ctox\scripts\install-windows-prereqs.ps1
+node .\ctox\scripts\validate-skill.mjs
+```
+
+Fallback:
+
+```powershell
+winget install -e --id OpenJS.NodeJS.LTS --accept-package-agreements --accept-source-agreements
+```
+
+Restart the shell or agent runtime after installing Node.js so PATH refreshes.
+If Node cannot be installed, report that as a blocker, not as a verified
+functional install.
+
 Before configuring Business OS MCP, inspect the target:
 
 ```bash
