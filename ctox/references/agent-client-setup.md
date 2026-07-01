@@ -116,9 +116,13 @@ different shell, generated apps must set `module.json` `layout.shell` to
 `full-workspace`, render their own focused workspace inside `ctx.host`, avoid
 generic `Kontext`/`Themen` side panes and empty duplicate app columns, and use
 Business OS theme tokens for light/dark surfaces, text, borders, and controls.
-Do not force `color-scheme` or hard-code a dark-only/light-only root palette.
-Browser ESM dependencies must be committed as relative `.mjs` files under the
-app source root and imported relatively.
+The shell already supplies app identity, version/source controls, account
+state, and chat. Generated business apps may add at most one compact commandbar
+for local filters and primary actions. Do not stack category/title heroes,
+duplicate app names, version bars, metrics strips, date strips, and filter rows
+before the work surface. Do not force `color-scheme` or hard-code a
+dark-only/light-only root palette. Browser ESM dependencies must be committed
+as relative `.mjs` files under the app source root and imported relatively.
 
 For booking, scheduling, parking, shift, availability, or other date-oriented
 business workflows, generated apps must prefer a calendar/date-strip view and
@@ -126,7 +130,9 @@ one-click primary actions for the common path. Do not make the user open a
 modal or fill a form just to claim/release/book a visible slot. Do not add
 generic "Report to CTOX", "An CTOX melden", queue, AI, or command-bus buttons
 unless the user explicitly requested that workflow or the app can dispatch a
-real command and show a trackable result.
+real command and show a trackable result. Resource workflows must enforce
+domain conflicts in the one-click path, for example one vehicle/person/asset
+cannot be booked into two overlapping slots.
 
 If a create/modify response does not include `development_contract` or the
 listed `business-os-app-module-development` resources are unavailable, stop and

@@ -144,7 +144,12 @@ credentials as web-login credentials for a setup flow:
    modify Business OS apps. It mints an Agent Token with reads, writes, and
    approval-class MCP calls enabled, while external effects stay disabled.
    Use `--profile read-only` only for inspection-only agents.
-8. If the server does not expose the required endpoint or the actor lacks
+8. After connecting an app-development agent, make it use the
+   `business-os-app-module-development` contract returned by
+   `business_os.create_app` or `business_os.modify_app`. Normal Business OS apps
+   default to a single compact commandbar, not stacked app headers, duplicate
+   shell chrome, empty side panes, or generic web-app templates.
+9. If the server does not expose the required endpoint or the actor lacks
    Owner/Admin rights, open the browser to the exact dashboard MCP location and
    tell the user to enable Managed MCP, press **Token rotieren**, and copy the
    one-time token shown under **Neuer Token**. Do not ask them to search for an
@@ -458,11 +463,18 @@ Unless the user explicitly requests a different shell, the app contract is:
 - The app owns the visible workspace inside `ctx.host`; it must not leave the
   user framed by generic shell side panes such as `Kontext` and `Themen`, and
   must not duplicate empty left/right columns inside the app.
+- The shell already supplies app identity, version/source controls, account
+  state, and chat. Generated business apps may add at most one compact
+  commandbar for local filters and primary actions. Do not stack category/title
+  heroes, duplicate app names, version bars, metrics strips, date strips, and
+  filter rows before the work surface.
 - High-frequency business workflows must be direct. For booking, scheduling,
   assignment, shift, parking, availability, or calendar-like domains, provide a
   date strip/calendar view and one-click primary actions such as "Eintragen" or
   "Austragen"; do not force the user through a modal/form unless extra data is
   genuinely required.
+- Resource workflows must enforce domain conflicts in the one-click path. For
+  example, one vehicle/person/asset cannot be booked into two overlapping slots.
 - Do not add generic "Report to CTOX", "An CTOX melden", queue, AI, or
   command-bus buttons by default. Add a visible automation action only when the
   user asked for it or the domain workflow clearly needs it, and only when it
