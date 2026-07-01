@@ -458,6 +458,15 @@ Unless the user explicitly requests a different shell, the app contract is:
 - The app owns the visible workspace inside `ctx.host`; it must not leave the
   user framed by generic shell side panes such as `Kontext` and `Themen`, and
   must not duplicate empty left/right columns inside the app.
+- High-frequency business workflows must be direct. For booking, scheduling,
+  assignment, shift, parking, availability, or calendar-like domains, provide a
+  date strip/calendar view and one-click primary actions such as "Eintragen" or
+  "Austragen"; do not force the user through a modal/form unless extra data is
+  genuinely required.
+- Do not add generic "Report to CTOX", "An CTOX melden", queue, AI, or
+  command-bus buttons by default. Add a visible automation action only when the
+  user asked for it or the domain workflow clearly needs it, and only when it
+  dispatches a real command and exposes a trackable result.
 - CSS uses Business OS theme tokens for surfaces, text, borders, and controls
   so light and dark theme both render correctly. Do not force `color-scheme` or
   hard-code a dark-only/light-only root palette.

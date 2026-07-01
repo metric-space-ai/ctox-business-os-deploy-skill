@@ -53,6 +53,8 @@ const requiredPhrases = [
   "full-workspace",
   "Kontext",
   "Themen",
+  "one-click primary actions",
+  "An CTOX melden",
   "Business OS theme tokens",
   "color-scheme",
   "Browser ESM dependencies",

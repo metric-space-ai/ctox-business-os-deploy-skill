@@ -120,6 +120,14 @@ Do not force `color-scheme` or hard-code a dark-only/light-only root palette.
 Browser ESM dependencies must be committed as relative `.mjs` files under the
 app source root and imported relatively.
 
+For booking, scheduling, parking, shift, availability, or other date-oriented
+business workflows, generated apps must prefer a calendar/date-strip view and
+one-click primary actions for the common path. Do not make the user open a
+modal or fill a form just to claim/release/book a visible slot. Do not add
+generic "Report to CTOX", "An CTOX melden", queue, AI, or command-bus buttons
+unless the user explicitly requested that workflow or the app can dispatch a
+real command and show a trackable result.
+
 If a create/modify response does not include `development_contract` or the
 listed `business-os-app-module-development` resources are unavailable, stop and
 report the missing app contract. Do not improvise a raw web app.

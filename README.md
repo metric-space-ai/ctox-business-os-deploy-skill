@@ -95,7 +95,11 @@ MCP app-development contract returned by `business_os.create_app` or
 resources. Normal generated apps default to `module.json`
 `layout.shell: "full-workspace"`, no generic `Kontext`/`Themen` shell side
 panes, and Business OS theme tokens for light/dark rendering unless the user
-explicitly asks for a different shell.
+explicitly asks for a different shell. Booking, scheduling, parking, shift, and
+availability apps should expose calendar/date-strip views with one-click
+primary actions. Do not add generic "Report to CTOX" / "An CTOX melden" buttons
+unless the user requested that automation and the app returns a real trackable
+command/task result.
 
 Companion skill URL:
 
