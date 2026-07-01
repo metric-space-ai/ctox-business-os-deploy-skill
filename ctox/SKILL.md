@@ -484,7 +484,10 @@ Unless the user explicitly requests a different shell, the app contract is:
   hard-code a dark-only/light-only root palette.
 - Browser ESM dependencies must be checked in as relative `.mjs` files under
   the app source root and imported relatively; do not add npm/package-manager
-  bridges.
+  bridges. If a helper module's export surface changes, change the imported
+  helper URL as well; use a fresh helper import URL, for example with a
+  versioned helper filename, and verify a real browser reload so stale ESM
+  module caches cannot break `mount(ctx)`.
 
 If `business_os.create_app` or `business_os.modify_app` does not return the
 `development_contract`, or the required `business-os-app-module-development`

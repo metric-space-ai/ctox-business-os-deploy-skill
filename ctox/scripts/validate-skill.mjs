@@ -61,6 +61,7 @@ const requiredPhrases = [
   "Business OS theme tokens",
   "color-scheme",
   "Browser ESM dependencies",
+  "fresh helper import URL",
   "Node.js 18+",
   "windows-prereqs.md",
   "install-windows-prereqs.ps1",

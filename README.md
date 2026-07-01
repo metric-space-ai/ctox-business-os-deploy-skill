@@ -148,6 +148,9 @@ app visibility, version/lifecycle, and exact product grants such as
 `user`; they need exact grants for status, private apps, data reads/writes,
 app changes, and approvals. Apps with `0.x.y`, missing, or invalid versions
 stay private; apps at `1.0.0+` are team-visible by default unless restricted.
+For runtime app edits, changed browser ESM helper exports must get a fresh
+helper import URL, for example a versioned helper filename, and a real browser
+reload must prove the app does not fail on stale helper modules.
 
 ## Deployment Choices
 

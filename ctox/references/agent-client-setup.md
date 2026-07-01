@@ -123,6 +123,10 @@ duplicate app names, version bars, metrics strips, date strips, and filter rows
 before the work surface. Do not force `color-scheme` or hard-code a
 dark-only/light-only root palette. Browser ESM dependencies must be committed
 as relative `.mjs` files under the app source root and imported relatively.
+When a helper's export surface changes, change the imported helper URL too
+(for example with a versioned helper filename such as `lib/records-v2.mjs`) so
+an already-open browser cannot keep an old ESM module in cache while loading a
+new `index.js`.
 
 For booking, scheduling, parking, shift, availability, or other date-oriented
 business workflows, generated apps must prefer a calendar/date-strip view and
