@@ -450,6 +450,26 @@ business-os-app-module-development`, `skill_resources`, validation, smoke, and
 E2E commands. Use that contract exactly; do not hand-roll raw file writes or a
 browser/API fallback.
 
+If the user asks the connected coding agent to build or edit a Business OS app,
+the default is a normal Business OS app, not a shell/developer control surface.
+Unless the user explicitly requests a different shell, the app contract is:
+
+- `module.json` sets `layout.shell` to `full-workspace`.
+- The app owns the visible workspace inside `ctx.host`; it must not leave the
+  user framed by generic shell side panes such as `Kontext` and `Themen`, and
+  must not duplicate empty left/right columns inside the app.
+- CSS uses Business OS theme tokens for surfaces, text, borders, and controls
+  so light and dark theme both render correctly. Do not force `color-scheme` or
+  hard-code a dark-only/light-only root palette.
+- Browser ESM dependencies must be checked in as relative `.mjs` files under
+  the app source root and imported relatively; do not add npm/package-manager
+  bridges.
+
+If `business_os.create_app` or `business_os.modify_app` does not return the
+`development_contract`, or the required `business-os-app-module-development`
+resources are unavailable, stop and report the missing contract instead of
+improvising an app.
+
 ## Failure Handling
 
 Treat these as authoritative blockers:

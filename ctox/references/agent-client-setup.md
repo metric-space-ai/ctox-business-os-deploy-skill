@@ -110,6 +110,20 @@ Claude should use that contract exactly, validate with the returned command,
 and rely on Business OS MCP completion status. Do not use browser automation,
 raw HTTP, SQL, or shell access as a Business OS data path.
 
+For ordinary generated Business OS apps, the default shell is the standard app
+workspace, not a developer shell. Unless the user explicitly asks for a
+different shell, generated apps must set `module.json` `layout.shell` to
+`full-workspace`, render their own focused workspace inside `ctx.host`, avoid
+generic `Kontext`/`Themen` side panes and empty duplicate app columns, and use
+Business OS theme tokens for light/dark surfaces, text, borders, and controls.
+Do not force `color-scheme` or hard-code a dark-only/light-only root palette.
+Browser ESM dependencies must be committed as relative `.mjs` files under the
+app source root and imported relatively.
+
+If a create/modify response does not include `development_contract` or the
+listed `business-os-app-module-development` resources are unavailable, stop and
+report the missing app contract. Do not improvise a raw web app.
+
 ## Runtime-Specific Notes
 
 Do not give the user a hard-coded local install script for one agent runtime

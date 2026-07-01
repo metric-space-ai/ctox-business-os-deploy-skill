@@ -89,6 +89,14 @@ repository or this chat. After a deployment is connected, use the companion
 `ctox-business-os-mcp` skill for normal Business OS record interaction and
 actions.
 
+For Business OS app creation or modification, the connected agent must use the
+MCP app-development contract returned by `business_os.create_app` or
+`business_os.modify_app`, including the `business-os-app-module-development`
+resources. Normal generated apps default to `module.json`
+`layout.shell: "full-workspace"`, no generic `Kontext`/`Themen` shell side
+panes, and Business OS theme tokens for light/dark rendering unless the user
+explicitly asks for a different shell.
+
 Companion skill URL:
 
 ```text
