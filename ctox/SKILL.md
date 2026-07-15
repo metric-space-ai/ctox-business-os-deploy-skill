@@ -148,7 +148,9 @@ credentials as web-login credentials for a setup flow:
    `business-os-app-module-development` contract returned by
    `business_os.create_app` or `business_os.modify_app`. Normal Business OS apps
    default to a single compact commandbar, not stacked app headers, duplicate
-   shell chrome, empty side panes, or generic web-app templates.
+   shell chrome, empty side panes, or generic web-app templates. Before
+   frontend mutation it must also run the CTOX-specific `IMPECCABLE_PREFLIGHT`
+   in `references/business-os-app-design-preflight.md`.
 9. If the server does not expose the required endpoint or the actor lacks
    Owner/Admin rights, open the browser to the exact dashboard MCP location and
    tell the user to enable Managed MCP, press **Token rotieren**, and copy the
@@ -459,7 +461,17 @@ If the user asks the connected coding agent to build or edit a Business OS app,
 the default is a normal Business OS app, not a shell/developer control surface.
 Unless the user explicitly requests a different shell, the app contract is:
 
-- `module.json` sets `layout.shell` to `full-workspace`.
+- `module.json` sets root `launch_kind` to `desktop-app`, writes the canonical
+  `presentation` object with a 640×480 floating-window minimum, and keeps
+  `layout.shell: windowed` only as a compatibility hint. At a shell width of
+  600px or below the presentation becomes a mobile app sheet supported down to
+  360px instead of retaining an off-screen 640px canvas.
+- Persisted collection schemas are never edited under the same version. Each
+  version bump declares every intermediate
+  `migration_strategies.<collection>.<targetVersion>` entry in
+  `collections.schema.json`; `{ "operations": [] }` is the additive identity
+  form. The browser and native peer execute this same JSON contract, and native
+  bring-up intentionally fails before cleanup if old rows lack a strategy.
 - The app owns the visible workspace inside `ctx.host`; it must not leave the
   user framed by generic shell side panes such as `Kontext` and `Themen`, and
   must not duplicate empty left/right columns inside the app.
@@ -468,6 +480,18 @@ Unless the user explicitly requests a different shell, the app contract is:
   commandbar for local filters and primary actions. Do not stack category/title
   heroes, duplicate app names, version bars, metrics strips, date strips, and
   filter rows before the work surface.
+- Routine import, search, filter, sort, select, edit, save, export, navigation,
+  status, and window controls follow the compact Ableton-density principle.
+  Per visible work surface, at most one real domain-named AI automation may use
+  prominent color or space. It dispatches a typed command and exposes
+  permission/approval, queued/running, result, failure, abort, and retry state;
+  Create/Save/Export/Settings and generic Ask AI controls are not hero actions.
+- Two-/three-pane apps keep shell-owned resizers while wide. At compact/mobile
+  sizes every reduced pane needs a visible tab, drawer, stack, or back route;
+  silently hiding context or detail panes is forbidden.
+- The shell window header owns app name, version/status, Source, Versions/
+  Rollback, Minimize, Maximize, and Close. Apps do not duplicate that chrome
+  and leave it reachable on narrow windows and mobile.
 - High-frequency business workflows must be direct. For booking, scheduling,
   assignment, shift, parking, availability, or calendar-like domains, provide a
   date strip/calendar view and one-click primary actions such as "Eintragen" or
@@ -479,6 +503,11 @@ Unless the user explicitly requests a different shell, the app contract is:
   command-bus buttons by default. Add a visible automation action only when the
   user asked for it or the domain workflow clearly needs it, and only when it
   dispatches a real command and exposes a trackable result.
+- Every app command uses canonical `command_type` through
+  `ctx.commandBus.dispatch`. Do not emit the historical `type` alias, write
+  `business_commands` directly, or create a private pending-intent fallback.
+  Long-running queue/harness work uses the facade's accepted/terminal/resume/
+  subscription/cancel lifecycle and exposes trackable state.
 - CSS uses Business OS theme tokens for surfaces, text, borders, and controls
   so light and dark theme both render correctly. Do not force `color-scheme` or
   hard-code a dark-only/light-only root palette.
@@ -488,6 +517,19 @@ Unless the user explicitly requests a different shell, the app contract is:
   helper URL as well; use a fresh helper import URL, for example with a
   versioned helper filename, and verify a real browser reload so stale ESM
   module caches cannot break `mount(ctx)`.
+- Visual completion requires real Start/Desktop single click, mouse window and
+  pane resize, maximize/restore, minimize/restore through the upper app bar,
+  close, 1180/960/
+  640×480/390×844/360px renderings, light/dark, German/English, long app-name
+  labels, and coexistence with chat. There is no second bottom app switcher;
+  the lower shell area belongs to chat/history/system status.
+  Direct style mutation is not resize proof.
+
+Read `references/business-os-app-design-preflight.md` before handing app work
+to a connected coding agent. The remote
+`business-os-app-module-development` resource remains authoritative when it is
+available; this bundled contract prevents an older server resource from
+silently restoring legacy fullscreen or generic dashboard behavior.
 
 If `business_os.create_app` or `business_os.modify_app` does not return the
 `development_contract`, or the required `business-os-app-module-development`

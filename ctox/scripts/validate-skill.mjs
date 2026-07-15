@@ -17,7 +17,8 @@ const requiredReferences = [
   "references/capabilities-and-rights.md",
   "references/roles-and-permissions.md",
   "references/security-policy.md",
-  "references/troubleshooting.md"
+  "references/troubleshooting.md",
+  "references/business-os-app-design-preflight.md"
 ];
 
 const requiredPhrases = [
@@ -50,7 +51,15 @@ const requiredPhrases = [
   "business_os.create_app",
   "business_os.modify_app",
   "development_contract",
-  "full-workspace",
+  "launch_kind` to `desktop-app",
+  "IMPECCABLE_PREFLIGHT",
+  "Ableton-density",
+  "mobile app sheet",
+  "640×480",
+  "360px",
+  "Versions/",
+  "shell-owned resizers",
+  "Direct style mutation is not",
   "single compact commandbar",
   "stacked app headers",
   "Kontext",
