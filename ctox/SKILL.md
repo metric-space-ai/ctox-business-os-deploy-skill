@@ -1,6 +1,6 @@
 ---
 name: ctox
-description: Use whenever a coding agent is invoked with /ctox to interact with a CTOX instance: install or locate CTOX, query status and active work, delegate tasks, inspect runs/artifacts/approvals, wire Business OS MCP, connect to mcp.ctox.dev, use SSH plus CTOX CLI for host-level diagnostics, or verify that CTOX Business OS is reachable through its supported typed MCP surface.
+description: Use whenever a coding agent is invoked with /ctox to interact with a CTOX instance: install or locate CTOX, query status and active work, delegate tasks, inspect runs/artifacts/approvals, wire Business OS MCP, connect to mcp.ctox.dev, use SSH plus CTOX CLI for host-level diagnostics, port an existing React/TypeScript app into Business OS, or verify that CTOX Business OS is reachable through its supported typed MCP surface.
 ---
 
 # CTOX Agent Interface
@@ -86,6 +86,12 @@ Classify the user's request before acting.
 - **Deployment/readiness:** installing CTOX, starting Business OS, connecting
   MCP, coupling to ctox.dev, configuring client agents, or verifying a new
   endpoint. Follow the deployment workflow below.
+- **App porting:** the user hands you an existing app (folder or GitHub repo,
+  typically React/TypeScript) and wants it inside Business OS. Run the full
+  transcode/port pipeline in `references/business-os-app-porting.md` —
+  transcode once to plain ESM, report unsupported dependencies honestly,
+  install via `local-modules/`, verify. Never wire a build step or a CDN
+  into an installed app.
 - **Business operation:** reading records, inspecting artifacts, approving
   work, or proposing actions. Use the companion `ctox-business-os-mcp`
   workflow and stay inside typed MCP tools.
