@@ -18,6 +18,11 @@ unless the user explicitly asks about the repository, this chat, or this agent.
 For deeper day-to-day Business OS reads, actions, approvals, and reports, use
 the companion `ctox-business-os-mcp` skill after MCP is connected.
 
+When invoked from Workjet Dev/Ops or for an existing linked execution, read
+`references/workjet-devops.md` before choosing a connection or submitting work.
+It defines the package's versioned integration guidance; it does not grant
+capabilities or replace the selected server's advertised contracts.
+
 Before changing a target machine, understand the target and give the user a
 choice. Ask whether they want to couple the instance to ctox.dev unless they
 already made that decision in the request.
@@ -107,9 +112,11 @@ For operational status requests:
    `business_os.list_runs`, `business_os.list_mcp_activity`,
    `business_os.list_approvals`, and narrow record queries for task/work queues
    when those tools are advertised.
-4. If multiple CTOX MCP servers or instances are configured, check each one
-   when the runtime exposes them. Ask the user to choose only when the runtime
-   cannot disambiguate.
+4. Use the instance explicitly requested or bound to the current execution.
+   Check multiple instances only when the user asks for an overview. If neither
+   the request nor the runtime provides an unambiguous target, ask the user to
+   choose before querying instance data. A global selection change does not
+   retarget an existing execution.
 5. Summarize each instance as `idle`, `working`, `blocked`, or
    `not_connected`, including active run/command IDs, task titles, approvals,
    blockers, timestamps, and deep links when the MCP response provides them.
