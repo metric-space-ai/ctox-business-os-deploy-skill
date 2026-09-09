@@ -92,10 +92,13 @@ actions.
 For Business OS app creation or modification, the connected agent must use the
 MCP app-development contract returned by `business_os.create_app` or
 `business_os.modify_app`, including the `business-os-app-module-development`
-resources. Normal generated apps default to `module.json`
-`layout.shell: "full-workspace"`, no generic `Kontext`/`Themen` shell side
-panes, and Business OS theme tokens for light/dark rendering unless the user
-explicitly asks for a different shell. The shell already supplies app identity,
+resources. The bundled app baseline uses `module.json` root
+`launch_kind: "desktop-app"` and its `presentation` object; `layout.shell:
+"windowed"` is only a compatibility hint. Follow the selected server's
+development contract and report incompatible shell requirements rather than
+silently falling back to legacy fullscreen. Avoid generic `Kontext`/`Themen`
+shell side panes and use Business OS theme tokens for light/dark rendering.
+The shell already supplies app identity,
 version/source controls, account state, and chat; generated apps may add at
 most one compact commandbar for local filters and primary actions, not stacked
 app headers. Booking, scheduling, parking, shift, and availability apps should
@@ -110,6 +113,18 @@ Companion skill URL:
 ```text
 https://github.com/metric-space-ai/ctox/tree/main/skills/ctox-business-os-mcp
 ```
+
+## Workjet Dev/Ops integration
+
+Package `0.1.1` includes [Workjet integration guidance, revision 1](ctox/references/workjet-devops.md).
+It distinguishes the native CTOX harness of an instance from another harness
+using that instance's MCP tools. Existing execution bindings remain fixed across
+Dev/Ops or global instance changes. The guidance covers capability discovery,
+retries, context restoration and Crew boundaries without claiming that missing
+runtime APIs already exist. Install and record an immutable repository commit
+when reproducing an integration; package version alone does not pin the separate
+companion skill or a live server's contracts.
+
 
 ## What Business OS MCP Is
 
